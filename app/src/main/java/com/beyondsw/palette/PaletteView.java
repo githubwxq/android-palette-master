@@ -40,6 +40,7 @@ public class PaletteView extends View {
     private int mEraserSize;
     private int mPenAlpha = 255;
 
+    //可以擦除
     private boolean mCanEraser;
 
     private Callback mCallback;
@@ -88,11 +89,13 @@ public class PaletteView extends View {
         mPaint.setColor(0XFF000000);
         mXferModeDraw = new PorterDuffXfermode(PorterDuff.Mode.SRC);
         mXferModeClear = new PorterDuffXfermode(PorterDuff.Mode.CLEAR);
+        //默认画图
         mPaint.setXfermode(mXferModeDraw);
     }
 
     private void initBuffer(){
         mBufferBitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
+        //canvas 由bitmap生成
         mBufferCanvas = new Canvas(mBufferBitmap);
     }
 
@@ -217,6 +220,7 @@ public class PaletteView extends View {
 
     public void clear() {
         if (mBufferBitmap != null) {
+
             if (mDrawingList != null) {
                 mDrawingList.clear();
             }
@@ -229,6 +233,7 @@ public class PaletteView extends View {
             if (mCallback != null) {
                 mCallback.onUndoRedoStatusChanged();
             }
+
         }
     }
 
@@ -243,16 +248,20 @@ public class PaletteView extends View {
         if (mDrawingList == null) {
             mDrawingList = new ArrayList<>(MAX_CACHE_STEP);
         } else if (mDrawingList.size() == MAX_CACHE_STEP) {
+//           直达删除第一个
             mDrawingList.remove(0);
         }
+//    缓存当前绘画的状态 放在对象里面到时候拿出来重新绘制
         Path cachePath = new Path(mPath);
         Paint cachePaint = new Paint(mPaint);
         PathDrawingInfo info = new PathDrawingInfo();
         info.path = cachePath;
         info.paint = cachePaint;
         mDrawingList.add(info);
+
         mCanEraser = true;
         if (mCallback != null) {
+            //显示可以擦除
             mCallback.onUndoRedoStatusChanged();
         }
     }
@@ -268,6 +277,7 @@ public class PaletteView extends View {
     @SuppressWarnings("all")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+//        、、能不能获取如果不能就不做处理了
         if(!isEnabled()){
             return false;
         }
@@ -278,14 +288,19 @@ public class PaletteView extends View {
             case MotionEvent.ACTION_DOWN:
                 mLastX = x;
                 mLastY = y;
+                //新new个路径出来
+
                 if (mPath == null) {
                     mPath = new Path();
                 }
+//                、、移动到那个店
                 mPath.moveTo(x,y);
                 break;
             case MotionEvent.ACTION_MOVE:
                 //这里终点设为两点的中心点的目的在于使绘制的曲线更平滑，如果终点直接设置为x,y，效果和lineto是一样的,实际是折线效果
+                //一阶贝塞尔曲线 控制点为中点
                 mPath.quadTo(mLastX, mLastY, (x + mLastX) / 2, (y + mLastY) / 2);
+
                 if (mBufferBitmap == null) {
                     initBuffer();
                 }
@@ -301,6 +316,7 @@ public class PaletteView extends View {
                 if (mMode == Mode.DRAW || mCanEraser) {
                     saveDrawingPath();
                 }
+//                、、路径重置
                 mPath.reset();
                 break;
         }

@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         mUndoView = findViewById(R.id.undo);
         mRedoView = findViewById(R.id.redo);
+
         mPenView = findViewById(R.id.pen);
         mPenView.setSelected(true);
         mEraserView = findViewById(R.id.eraser);
@@ -104,10 +105,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (bmp == null) {
             return null;
         }
-        File appDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        File appDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/apad/image/");
         if (appDir == null) {
             return null;
         }
+        if (!appDir.exists()) {
+            appDir.mkdirs();
+        }
+
         String fileName = System.currentTimeMillis() + ".jpg";
         File file = new File(appDir, fileName);
         FileOutputStream fos = null;
